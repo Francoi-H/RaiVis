@@ -1,3 +1,4 @@
+https://rai-vis.vercel.app
 # RaiVis
 
 A web app that lets you step through JavaScript code and watch it execute — variables update in real time, the call stack shifts as functions are called, and every instruction is logged in a timeline you can scrub through.
