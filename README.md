@@ -1,101 +1,68 @@
-# Code Execution Visualizer
+# RaiVis
 
-## Project Structure
+A web app that lets you step through JavaScript code and watch it execute — variables update in real time, the call stack shifts as functions are called, and every instruction is logged in a timeline you can scrub through.
 
-```
-code-visualizer/
-  database/
-    schema.sql
-  server/
-    models/
-    routes/
-    middleware/
-    db.js
-    server.js
-    package.json
-    .env.example
-  client/
-    src/
-      interpreter/   ← tokenizer, parser, interpreter
-      components/    ← CodeEditor, ExecutionPanel, VariableViewer, OutputConsole
-      pages/         ← Home, Login, Dashboard
-      context/       ← AuthContext
-      lib/           ← api.js
-    index.html
-    vite.config.js
-    package.json
-```
+Built this to get a better understanding of how code actually runs under the hood.
 
 ---
 
-## Setup
+## Stack
 
-### 1. Database
+- React + Vite
+- Monaco Editor
+- Node.js + Express
+- PostgreSQL
+- JWT auth
 
+---
+
+## Running locally
+
+**Database**
 ```bash
-createdb code_visualizer
-psql code_visualizer < database/schema.sql
+createdb raivis
+psql raivis < database/schema.sql
 ```
 
-### 2. Backend
-
+**Backend**
 ```bash
 cd server
 npm install
 cp .env.example .env
-# Edit .env with your DB credentials and a JWT secret
+# fill in your DB credentials and a JWT secret
 npm run dev
 ```
 
-### 3. Frontend
-
+**Frontend**
 ```bash
 cd client
 npm install
 npm run dev
 ```
 
-Frontend runs on http://localhost:5173  
-Backend runs on http://localhost:4000
+Open `http://localhost:5173`
 
 ---
 
-## Features (v1)
+## What the interpreter supports
 
-- Register / Login with JWT auth
-- Monaco Editor with custom dark theme
-- Custom JS interpreter supporting:
-  - `let` / `const` declarations
-  - Arithmetic: `+ - * /`
-  - Comparison: `== != < > <= >=`
-  - Logic: `&& ||`
-  - Assignment
-  - `if / else`
-  - `while` loops
-  - `console.log`
-- Step-by-step execution with variable snapshots
-- Run mode (auto-steps through all)
-- Execution timeline (click any step to jump)
-- Save / load code snippets per user
+The execution engine is written from scratch — no `eval`, no external libraries.
+
+- `let` / `const` / `var`
+- Arithmetic and comparison operators
+- `if / else`
+- `while` and `for` loops with `break` / `continue`
+- Functions (declarations, calls, recursion)
+- Arrays with common methods (`push`, `pop`, `slice`, etc.)
+- Objects
+- `console.log`
 
 ---
 
-## Interpreter Architecture
+## How it works
 
 ```
-source code
-    ↓
-tokenizer.js   → token stream
-    ↓
-parser.js      → AST with line numbers
-    ↓
-interpreter.js → builds array of Step snapshots
-    ↓
-Dashboard.jsx  → drives stepIndex into ExecutionPanel
+source code → tokenizer → parser → AST → interpreter → steps[]
 ```
 
-Each step snapshot contains:
-- `line` — source line number
-- `description` — human-readable label
-- `variables` — full variable state at that point
-- `output` — console output accumulated so far
+The interpreter walks the AST and produces a snapshot after every instruction. Each snapshot holds the current variable state, call stack, and console output. The frontend just indexes into that array as you step forward or back.
